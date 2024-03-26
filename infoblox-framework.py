@@ -16,10 +16,10 @@ parser = argparse.ArgumentParser(
 parser.add_argument("gmhostname", help="Grid Master IP")
 parser.add_argument("-u", "--user")
 parser.add_argument("-p", "--password")
-parser.add_argument("-d", "--debug", action="store_true", help="Enable Debug Mode")
+parser.add_argument("-v", "--verbose", action="store_true", help="Enable Debug Mode")
 args = parser.parse_args()
 # for debugging
-if args.debug:
+if args.verbose:
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
