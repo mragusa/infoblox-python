@@ -9,8 +9,8 @@ from infoblox_client import objects
 import argparse
 
 parser = argparse.ArgumentParser(
-    prog="Infoblox ADP Script Framework",
-    description="Provides basic python script framework for interacting with ADP",
+    prog="Infoblox Script Framework",
+    description="Provides basic python script framework",
     epilog="Edit as needed",
 )
 parser.add_argument("gmhostname", help="Grid Master IP")
