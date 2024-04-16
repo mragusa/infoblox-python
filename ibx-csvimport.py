@@ -12,6 +12,7 @@ from infoblox_client import objects
 
 import csv
 import argparse
+import time
 
 parser = argparse.ArgumentParser(
     prog="Infoblox CSV Custom Import",
@@ -73,7 +74,13 @@ def prepare_files_dict(csv_data):
 
     return files
 
-
+def csv_import_status(import_id):
+	import_status = conn.get_object("csvimporttask", {"import_id":import_id})
+	if import_status:
+		for x in import_status:
+			if x["status"] == "RUNNING":
+				print("Lines Processed: {} Lines Failed: {}".format(x["lines_processed"],x["lines_failed"]))
+	return(x["status"])
 
 print("File: {}".format(args.file))
 file_upload = conn.call_func("uploadinit", "fileop", {})
@@ -96,10 +103,29 @@ if file_upload:
 	print("Starting Import")
 	import_task = conn.call_func("csv_import", "fileop", {"action":"START", "on_error":"CONTINUE","operation":args.action, "separator":"COMMA", "token":file_upload["token"]})
 	if import_task:
-		print("Import Task: {}".format(import_task))
+		print("Import Task: {} {}".format(import_task["csv_import_task"]["import_id"], import_task["csv_import_task"]["status"]))
 #		import_status = conn.get_object("csvimporttask", {"import_id":import_task["csv_import_task"]["import_id"]})
 #		if import_status:
 #			print(import_status)
+		while True:
+			status = csv_import_status(import_task["csv_import_task"]["import_id"])
+			if status == "COMPLETED":
+				print("CSV Import Job Completed")
+				break
+			elif status == "FAILED":
+				print("CSV Import Failed")
+				# TODO download error file
+			elif status == "RUNNING":
+				print("CSV Import Running")
+				time.sleep(1)
+			elif status == "PENDING":
+				print("CSV Import Pending")
+				time.sleep(2)
+			elif status == "STOPPED":
+				print("CSV Import Stopped")
+			else:
+				print("Unknown Status")
+				break
 	else:
 		print("Error in import task")
 
