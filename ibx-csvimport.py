@@ -95,7 +95,7 @@ def csv_import_status(import_id):
                         x["lines_processed"], x["lines_failed"]
                     )
                 )
-    return x["status"]
+    return x["status"], x["lines_failed"]
 
 
 print("File: {}".format(args.file))
@@ -137,13 +137,42 @@ if file_upload:
                 import_task["csv_import_task"]["status"],
             )
         )
-        # 		import_status = conn.get_object("csvimporttask", {"import_id":import_task["csv_import_task"]["import_id"]})
-        # 		if import_status:
-        # 			print(import_status)
         while True:
-            status = csv_import_status(import_task["csv_import_task"]["import_id"])
+            status, failed = csv_import_status(
+                import_task["csv_import_task"]["import_id"]
+            )
+            if args.verbose:
+                print(status)
             if status == "COMPLETED":
                 print("CSV Import Job Completed")
+                if failed > 0:
+                    print("Downloading CSV error file")
+                    csv_error_log = conn.call_func(
+                        "csv_error_log",
+                        "fileop",
+                        {"import_id": import_task["csv_import_task"]["import_id"]},
+                    )
+                    for csv_error_info in csv_error_log:
+                        print("CSV error log URL: {}".format(csv_error_log["url"]))
+                        print("CSV error token: {}".format(csv_error_log["token"]))
+                        response = conn.download_file(csv_error_log["url"])
+                        if response.status_code == 200:
+                            filename = (
+                                "csv_error_import_"
+                                + str(import_task["csv_import_task"]["import_id"])
+                                + ".csv"
+                            )
+                            with open(filename, "wb") as f:
+                                f.write(response.content)
+                            print("Error Log Downloaded")
+                            conn.call_func(
+                                "downloadcomplete",
+                                "fileop",
+                                {"token": csv_error_log["token"]},
+                            )
+                            break
+                else:
+                    print("No line failures")
                 break
             elif status == "FAILED":
                 print("CSV Import Failed")
