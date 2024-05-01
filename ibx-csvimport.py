@@ -99,7 +99,7 @@ def csv_import_status(import_id):
 
 
 print("File: {}".format(args.file))
-file_upload = conn.call_func("uploadinit", "fileop", {})
+file_upload = conn.call_func("uploadinit", "fileop", {"filename": args.file})
 if file_upload:
     print(
         "File Token: {} File URL: {}".format(file_upload["token"], file_upload["url"])
