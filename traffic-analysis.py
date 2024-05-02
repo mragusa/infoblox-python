@@ -127,7 +127,7 @@ class DnsAnalyzer:
                         )
         print()
         print("\033[94mTotal Slow Queries\033[0m: \033[93m{}\033[0m".format(len(slow_queries)))
-        print("\033[92m`Saving slow queries to file\033[0m")
+        print("\033[92mSaving slow queries to file\033[0m")
         print()
         with open(self.file, "w") as f:
             for query in slow_queries:
