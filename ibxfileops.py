@@ -44,4 +44,4 @@ if args.config:
 				f.write(response.content)
 			print("File Downloaded")
 		else:
-			print("Error downloading file. Status code: " response.status_code)
+			print("Error downloading file. Status code: {}".format(response.status_code))
