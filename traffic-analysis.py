@@ -2,9 +2,11 @@
 
 from scapy.all import *
 from tqdm import tqdm
-#import multiprocessing
+
+# import multiprocessing
 import argparse
 import statistics
+
 
 class DnsAnalyzer:
     def __init__(self, capture_file, source_ip, time_delay, verbose=False):
@@ -18,26 +20,52 @@ class DnsAnalyzer:
     def process_packet(self, packet):
         if self.verbose:
             print(packet)
-        if DNS in packet and (packet[IP].dst == self.source_ip or packet[IP].src == self.source_ip):
+        if DNS in packet and (
+            packet[IP].dst == self.source_ip or packet[IP].src == self.source_ip
+        ):
             dns = packet.getlayer(DNS)
             if self.verbose:
                 print(dns)  # Corrected indentation
             if dns is not None:
                 if DNSQR in dns:
                     if packet[IP].dst == self.source_ip:
-                        self.queries_received.append({"query_id": dns.id, "query_request": dns.qd.qname, "query_time": packet.time})
+                        self.queries_received.append(
+                            {
+                                "query_id": dns.id,
+                                "query_request": dns.qd.qname,
+                                "query_time": packet.time,
+                            }
+                        )
                     if packet[IP].src == self.source_ip:
                         if isinstance(dns.an, DNSRR):
                             response_name = dns.an.rrname
-                            self.responses_sent.append({"query_id": dns.id, "response_time": packet.time, "rrname": response_name})
+                            self.responses_sent.append(
+                                {
+                                    "query_id": dns.id,
+                                    "response_time": packet.time,
+                                    "rrname": response_name,
+                                }
+                            )
                             if self.verbose:
-                                print("{}{}{}".format(dns.id, dns.qd.qname, packet.time))
+                                print(
+                                    "{}{}{}".format(dns.id, dns.qd.qname, packet.time)
+                                )
                         elif isinstance(dns.an, list):
                             for response in dns.an:
                                 response_name = response.rrname
-                                self.responses_sent.append({"query_id": dns.id, "response_time": packet.time, "rrname": response_name})
+                                self.responses_sent.append(
+                                    {
+                                        "query_id": dns.id,
+                                        "response_time": packet.time,
+                                        "rrname": response_name,
+                                    }
+                                )
                                 if self.verbose:
-                                    print("{}{}{}".format(dns.id, packet.time, response_name))
+                                    print(
+                                        "{}{}{}".format(
+                                            dns.id, packet.time, response_name
+                                        )
+                                    )
 
     def analyze(self):
         total_packets = 0
@@ -48,7 +76,9 @@ class DnsAnalyzer:
         print("Total packets found {} in {}".format(total_packets, self.capture_file))
 
         # Add the tqdm progress bar to the loop
-        with tqdm(total=total_packets, desc="Processing packets", unit="packets") as pbar:
+        with tqdm(
+            total=total_packets, desc="Processing packets", unit="packets"
+        ) as pbar:
             with PcapReader(self.capture_file) as packets:
                 for packet in packets:
                     self.process_packet(packet)
@@ -60,40 +90,46 @@ class DnsAnalyzer:
         slow_queries = []
         for query in self.queries_received:
             query_id = query["query_id"]
-            query_match = next((resp for resp in self.responses_sent if resp["query_id"] == query_id), None)
+            query_match = next(
+                (resp for resp in self.responses_sent if resp["query_id"] == query_id),
+                None,
+            )
             if query_match:
                 latency_time = query_match["response_time"] - query["query_time"]
                 if self.verbose:
-                    print("Query ID: {}, Latency Time: {}".format(query_id, latency_time))  
+                    print(
+                        "Query ID: {}, Latency Time: {}".format(query_id, latency_time)
+                    )
                 latency_times.append(latency_time)
                 pbar.update(1)
                 if latency_time > self.time_delay:
                     slow_queries.append(
-                        {   
+                        {
                             "query": query["query_request"],
                             "query_id": query_id,
                             "latency": latency_time,
-                        }   
+                        }
                     )
         print("Total Slow Queries: {}".format(len(slow_queries)))
         print("Saving slow queries to file")
-        with open('slow_queries.txt', 'w') as f:
+        with open("slow_queries.txt", "w") as f:
             for query in slow_queries:
-                f.write(str(query)+'\n')
+                f.write(str(query) + "\n")
         print("Processing Latency Times:")
         if latency_times:
-                lowest_latency = min(latency_times)
-                highest_latency = max(latency_times)
-                median_latency = statistics.median(latency_times)
+            lowest_latency = min(latency_times)
+            highest_latency = max(latency_times)
+            median_latency = statistics.median(latency_times)
 
-                print("Lowest Latency:", lowest_latency)
-                print("Highest Latency:", highest_latency)
-                print("Median Latency:", median_latency)
+            print("Lowest Latency:", lowest_latency)
+            print("Highest Latency:", highest_latency)
+            print("Median Latency:", median_latency)
 
         total = total_packets
         slow = len(slow_queries)
         percentage_difference = ((total - slow) / total) * 100
         print("Percentage Difference:", percentage_difference, "%")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -102,12 +138,15 @@ def main():
     )
     parser.add_argument("-f", "--file", help="Traffic Capture File")
     parser.add_argument("-s", "--source", help="DNS Server IP Address")
-    parser.add_argument("-t", "--time", help="Latency delay measured in seconds", default=0.5)
+    parser.add_argument(
+        "-t", "--time", help="Latency delay measured in seconds", default=0.5
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
     args = parser.parse_args()
 
     analyzer = DnsAnalyzer(args.file, args.source, float(args.time), args.verbose)
     analyzer.analyze()
+
 
 if __name__ == "__main__":
     main()
