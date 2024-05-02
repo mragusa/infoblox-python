@@ -74,8 +74,8 @@ class DnsAnalyzer:
             for _ in packets:
                 total_packets += 1
 
-        print("Total packets found {} in {}".format(total_packets, self.capture_file))
-
+        print("\033[94mTotal packets found {} in {}\033[0m".format(total_packets, self.capture_file))
+        print()
         # Add the tqdm progress bar to the loop
         with tqdm(
             total=total_packets, desc="Processing packets", unit="packets", colour="blue"
@@ -85,8 +85,10 @@ class DnsAnalyzer:
                     self.process_packet(packet)
                     pbar.update(1)  # Update the progress bar
 
-        print("Number of queries received:", len(self.queries_received))
-        print("Number of responses sent:", len(self.responses_sent))
+        print()
+        print("\033[94mNumber of queries received: {}\033[0m".format(len(self.queries_received)))
+        print("\033[94mNumber of responses sent: {}\033[0m".format(len(self.responses_sent)))
+        print()
         latency_times = []
         slow_queries = []
         with tqdm(
@@ -123,27 +125,32 @@ class DnsAnalyzer:
                                 "latency": latency_time,
                             }
                         )
-        print("Total Slow Queries: {}".format(len(slow_queries)))
-        print("Saving slow queries to file")
+        print()
+        print("\033[94mTotal Slow Queries\033[0m: \033[93m{}\033[0m".format(len(slow_queries)))
+        print("\033[92m`Saving slow queries to file\033[0m")
+        print()
         with open(self.file, "w") as f:
             for query in slow_queries:
                 f.write(str(query) + "\n")
-        print("Processing Latency Times:")
+        print()
+        print("\033[95mProcessing Latency Times\033[0m")
+        print()
         if latency_times:
             lowest_latency = min(latency_times)
             highest_latency = max(latency_times)
             median_latency = statistics.median(latency_times)
 
-            print("Lowest Latency:", lowest_latency)
-            print("Highest Latency:", highest_latency)
-            print("Median Latency:", median_latency)
+            print("\033[94mLowest Latency: {}\033[0m".format(lowest_latency))
+            print("\033[91mHighest Latency: {}\033[0m".format(highest_latency))
+            print("\033[93mMedian Latency: {}\033[0m".format(median_latency))
 
         total = total_packets
         slow = len(slow_queries)
         percentage_difference = ((total - slow) / total) * 100
-        print("Total Packets: {}".format(total))
-        print("Slow Queries: {}".format(slow))
-        print("Percentage Difference:", percentage_difference, "%")
+        print()
+        print("\033[94mTotal Packets: {}\033[0m".format(total))
+        print("\033[91mSlow Queries: {}\033[0m".format(slow))
+        print("\033[94mPercentage Difference: {}%\033[0m".format(percentage_difference))
 
 
 def main():
