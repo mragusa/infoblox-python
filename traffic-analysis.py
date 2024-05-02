@@ -78,7 +78,7 @@ class DnsAnalyzer:
 
         # Add the tqdm progress bar to the loop
         with tqdm(
-            total=total_packets, desc="Processing packets", unit="packets", color="blue"
+            total=total_packets, desc="Processing packets", unit="packets", colour="blue"
         ) as pbar:
             with PcapReader(self.capture_file) as packets:
                 for packet in packets:
@@ -93,7 +93,7 @@ class DnsAnalyzer:
             total=len(self.queries_received),
             desc="Processing Query Latency",
             unit="queries",
-            color="green",
+            colour="green",
         ) as pbar:
             for query in self.queries_received:
                 query_id = query["query_id"]
@@ -158,8 +158,8 @@ def main():
         "-t", "--time", help="Latency delay measured in seconds", default=0.5
     )
     parser.add_argument(
-        "-f",
-        "--file",
+        "-o",
+        "--output",
         help="Name of slow queries file output",
         default="slow_queries.txt",
     )
@@ -167,7 +167,7 @@ def main():
     args = parser.parse_args()
 
     analyzer = DnsAnalyzer(
-        args.file, args.source, float(args.time), args.verbose, args.file
+        args.file, args.source, float(args.time), args.output, args.verbose
     )
     analyzer.analyze()
 
