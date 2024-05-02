@@ -10,6 +10,7 @@ infoblox scripts written in python utilizing infoblox-client
 | ibx-csvimport.py | Infoblox CSV import script utilizing infoblox-client module. |
 
 # Help Menus
+## ibxfileops.py
 ```
 % ./ibxfileops.py --help
 usage: Infoblox FileOps Script [-h] [-u USER] [-p PASSWORD] [-m MEMBER] [-v]
@@ -42,6 +43,8 @@ Download member data from the appliance
 > [!IMPORTANT]
 > csvimports via api do not allow the - symbol in filenames. Concert all hyphens to dashes prior to import
 > the filename specified on the CLI is only for naming the file in the GUI to better track what files are actively being imported by the CSV Task Manager
+
+## ibx-csvimport.py
 ```
  % ./ibx-csvimport.py --help
 usage: Infoblox CSV Custom Import [-h] [-u USER] [-p PASSWORD] [-v] [-f FILE] [-a {INSERT,UPDATE,REPLACE,DELETE,CUSTOM}] gmhostname
@@ -62,7 +65,10 @@ optional arguments:
 
 Refer to documentation on custom csv import format
 ```
+> [!NOTE]
+> if there are any errors during the csv import, they will automatically get downloaded to the current working directory
 
+## traffic-analysis.py
 ```
  % ./traffic-analysis.py --help                                                                                
 usage: traffic-analysis.py [-h] [-f FILE] [-s SOURCE] [-t TIME] [-o OUTPUT] [-v]
