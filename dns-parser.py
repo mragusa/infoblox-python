@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import argparse
 from scapy.all import *
+import argparse
+import time
 
-def process_dns_packet(packet):
+def process_dns_packet(packet, packet_time):
     if packet.haslayer(DNS):
         dns = packet[DNS]
+        print("Time:", packet_time)
         print("Transaction ID:", dns.id)
         print("QR (Query/Response):", "Response" if dns.qr else "Query")
         print("Opcode:", dns.opcode)
@@ -50,16 +52,19 @@ def process_dns_packet(packet):
                     print("\tData:", additional.rdata)
         print("=" * 50)
 
-
 def main():
-    parser = argparse.ArgumentParser(description='Parse DNS packets in a pcap file')
-    parser.add_argument('-f', '--file', dest='pcap_file', required=True, help='Path to the pcap file')
+    parser = argparse.ArgumentParser(description="Read a pcap file and display DNS packet fields.")
+    parser.add_argument("-f", "--file", help="Path to the pcap file", required=True)
     args = parser.parse_args()
 
-    packets = rdpcap(args.pcap_file)
+    packets = rdpcap(args.file)
+    packet_times = [(pkt.time, pkt) for pkt in packets]  # Store packet times and packets
 
-    for packet in packets:
-        process_dns_packet(packet)
+    # Sort packets by time
+    packet_times.sort(key=lambda x: x[0])
+
+    for packet_time, packet in packet_times:
+        process_dns_packet(packet, time.strftime("%H:%M:%S", time.localtime(int(packet_time))))
 
 if __name__ == "__main__":
     main()
