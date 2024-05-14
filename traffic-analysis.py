@@ -152,10 +152,10 @@ class DnsAnalyzer:
 
                         if dns.qd.qname not in self.recordname:
                             self.recordname[dns.qd.qname] = 1
-                            self.recordname_id[dns.qd.qname] = dns.id
+                            self.recordname_id[dns.qd.qname] = [dns.id]
                         else:
                             self.recordname[dns.qd.qname] += 1
-                            self.recordname_id[dns.qd.qname] += dns.id
+                            self.recordname_id[dns.qd.qname].append(dns.id)
                     if packet[IP].src == self.source_ip:
                         if isinstance(dns.an, DNSRR):
                             response_name = dns.an.rrname
@@ -299,12 +299,12 @@ class DnsAnalyzer:
         with open(self.report, "w") as f:
             for query, count in sorted_recordname:
                 f.write(
-                    "Query: {} Count: {} QueryID: {}\n".format(
+                        "Query: {} Count: {} Query ID: {}\n".format(
                         query, count, self.recordname_id[query]
                     )
                 )
 
-        print("\033[94mTotal Record Types\033[0m")
+        print("\033[94mTotal Record Types Queried\033[0m")
         for i in self.recordtypes:
             print(
                 "\033[94mType:\033[0m {} \033[96mCount:\033[0m {}".format(
