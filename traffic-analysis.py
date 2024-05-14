@@ -9,14 +9,122 @@ import statistics
 
 
 class DnsAnalyzer:
-    def __init__(self, capture_file, source_ip, time_delay, output_file, verbose=False):
+    def __init__(
+        self,
+        capture_file,
+        source_ip,
+        time_delay,
+        output_file,
+        report_file,
+        verbose=False,
+    ):
         self.capture_file = capture_file
         self.source_ip = source_ip.strip()
         self.time_delay = time_delay
         self.verbose = verbose
         self.queries_received = []
         self.responses_sent = []
+        self.recordname = {}
+        self.recordname_id = {}
+        self.recordtypes = {}
+        self.record_type_lookup = {
+            1: "A",
+            28: "AAAA",
+            62: "CSYNC",
+            49: "DHCID",
+            32769: "DLV",
+            39: "DNAME",
+            48: "DNSKEY",
+            43: "DS",
+            108: "EUI48",
+            109: "EUI64",
+            13: "HINFO",
+            55: "HIP",
+            65: "HTTPS",
+            45: "IPSECKEY",
+            25: "KEY",
+            36: "KX",
+            29: "LOC",
+            15: "MX",
+            35: "NAPTR",
+            2: "NS",
+            47: "NSEC",
+            50: "NSEC3",
+            51: "NSEC3PARAM",
+            61: "OPENPGPKEY",
+            12: "PTR",
+            17: "RP",
+            46: "RRSIG",
+            24: "SIG",
+            53: "SMIMEA",
+            6: "SOA",
+            33: "SRV",
+            44: "SSHFP",
+            64: "SVCB",
+            32768: "TA",
+            249: "TKEY",
+            52: "TLSA",
+            250: "TSIG",
+            16: "TXT",
+            256: "URI",
+            63: "ZONEMD",
+            255: "*",
+            252: "AXFR",
+            251: "IXFR",
+            41: "OPT",
+            3: "MD",
+            4: "MF",
+            254: "MAILA",
+            7: "MB",
+            8: "MG",
+            9: "MR",
+            14: "MINFO",
+            253: "MAILB",
+            11: "WKS",
+            32: "NB",
+            33: "NBSTAT",
+            10: "NULL",
+            38: "A6",
+            30: "NXT",
+            25: "KEY",
+            24: "SIG",
+            13: "HINFO",
+            17: "RP",
+            19: "X25",
+            20: "ISDN",
+            21: "RT",
+            22: "NSAP",
+            23: "NSAP-PTR",
+            26: "PX",
+            31: "EID",
+            32: "NIMLOC",
+            34: "ATMA",
+            42: "APL",
+            40: "SINK",
+            27: "GPOS",
+            100: "UINFO",
+            101: "UID",
+            102: "GID",
+            103: "UNSPEC",
+            99: "SPF",
+            56: "NINFO",
+            57: "RKEY",
+            58: "TALINK",
+            104: "NID",
+            105: "L32",
+            106: "L64",
+            107: "LP",
+            259: "DOA",
+            18: "AFSDB",
+            42: "APL",
+            257: "CAA",
+            60: "CDNSKEY",
+            59: "CDS",
+            37: "CERT",
+            5: "CNAME",
+        }
         self.file = output_file
+        self.report = report_file
 
     def process_packet(self, packet):
         if self.verbose:
@@ -37,6 +145,17 @@ class DnsAnalyzer:
                                 "query_time": packet.time,
                             }
                         )
+                        if dns.qd.qtype not in self.recordtypes:
+                            self.recordtypes[dns.qd.qtype] = 1
+                        else:
+                            self.recordtypes[dns.qd.qtype] += 1
+
+                        if dns.qd.qname not in self.recordname:
+                            self.recordname[dns.qd.qname] = 1
+                            self.recordname_id[dns.qd.qname] = dns.id
+                        else:
+                            self.recordname[dns.qd.qname] += 1
+                            self.recordname_id[dns.qd.qname] += dns.id
                     if packet[IP].src == self.source_ip:
                         if isinstance(dns.an, DNSRR):
                             response_name = dns.an.rrname
@@ -74,11 +193,18 @@ class DnsAnalyzer:
             for _ in packets:
                 total_packets += 1
 
-        print("\033[94mTotal packets found {} in {}\033[0m".format(total_packets, self.capture_file))
+        print(
+            "\033[94mTotal packets found {} in {}\033[0m".format(
+                total_packets, self.capture_file
+            )
+        )
         print()
         # Add the tqdm progress bar to the loop
         with tqdm(
-            total=total_packets, desc="Processing packets", unit="packets", colour="blue"
+            total=total_packets,
+            desc="Processing packets",
+            unit="packets",
+            colour="blue",
         ) as pbar:
             with PcapReader(self.capture_file) as packets:
                 for packet in packets:
@@ -86,8 +212,16 @@ class DnsAnalyzer:
                     pbar.update(1)  # Update the progress bar
 
         print()
-        print("\033[94mNumber of queries received: {}\033[0m".format(len(self.queries_received)))
-        print("\033[94mNumber of responses sent: {}\033[0m".format(len(self.responses_sent)))
+        print(
+            "\033[94mNumber of queries received: {}\033[0m".format(
+                len(self.queries_received)
+            )
+        )
+        print(
+            "\033[94mNumber of responses sent: {}\033[0m".format(
+                len(self.responses_sent)
+            )
+        )
         print()
         latency_times = []
         slow_queries = []
@@ -126,9 +260,12 @@ class DnsAnalyzer:
                             }
                         )
         print()
-        print("\033[94mTotal Slow Queries\033[0m: \033[93m{}\033[0m".format(len(slow_queries)))
+        print(
+            "\033[94mTotal Slow Queries\033[0m: \033[93m{}\033[0m".format(
+                len(slow_queries)
+            )
+        )
         print("\033[92mSaving slow queries to file\033[0m")
-        print()
         with open(self.file, "w") as f:
             for query in slow_queries:
                 f.write(str(query) + "\n")
@@ -151,6 +288,29 @@ class DnsAnalyzer:
         print("\033[94mTotal Packets: {}\033[0m".format(total))
         print("\033[91mSlow Queries: {}\033[0m".format(slow))
         print("\033[94mPercentage Difference: {}%\033[0m".format(percentage_difference))
+        print()
+        sorted_recordname = sorted(
+            self.recordname.items(), key=lambda x: x[1], reverse=True
+        )
+        print("\033[92mSaving Total Names Queried Report\033[0m")
+        print()
+        if self.verbose:
+            print("Query: {} Count: {}".format(i, sorted_recordname[i]))
+        with open(self.report, "w") as f:
+            for query, count in sorted_recordname:
+                f.write(
+                    "Query: {} Count: {} QueryID: {}\n".format(
+                        query, count, self.recordname_id[query]
+                    )
+                )
+
+        print("\033[94mTotal Record Types\033[0m")
+        for i in self.recordtypes:
+            print(
+                "\033[94mType:\033[0m {} \033[96mCount:\033[0m {}".format(
+                    self.record_type_lookup[i], self.recordtypes[i]
+                )
+            )
 
 
 def main():
@@ -165,6 +325,12 @@ def main():
         "-t", "--time", help="Latency delay measured in seconds", default=0.5
     )
     parser.add_argument(
+        "-r",
+        "--report",
+        help="Query Traffic Report Count",
+        default="query_traffic_count.txt",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         help="Name of slow queries file output",
@@ -174,7 +340,7 @@ def main():
     args = parser.parse_args()
 
     analyzer = DnsAnalyzer(
-        args.file, args.source, float(args.time), args.output, args.verbose
+        args.file, args.source, float(args.time), args.output, args.report, args.verbose
     )
     analyzer.analyze()
 
