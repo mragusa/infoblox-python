@@ -299,7 +299,7 @@ class DnsAnalyzer:
         with open(self.report, "w") as f:
             for query, count in sorted_recordname:
                 f.write(
-                        "Query: {} Count: {} Query ID: {}\n".format(
+                    "Query: {} Count: {} Query ID: {}\n".format(
                         query, count, self.recordname_id[query]
                     )
                 )
