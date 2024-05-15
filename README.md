@@ -8,6 +8,7 @@ infoblox scripts written in python utilizing infoblox-client
 | traffic-analysis.py | Read tcpdump PCAP file and display DNS queries that are higher that requested time delay. Default is 500ms | 
 | ibxfileops.py | Perform basic fileops against Infoblox grid members/master |
 | ibx-csvimport.py | Infoblox CSV import script utilizing infoblox-client module. |
+| dns-parser.py | Read PCAP file and display packets to the screen |
 
 # Help Menus
 ## ibxfileops.py
@@ -81,6 +82,8 @@ options:
   -s SOURCE, --source SOURCE
                         DNS Server IP Address (default: None)
   -t TIME, --time TIME  Latency delay measured in seconds (default: 0.5)
+  -r REPORT, --report REPORT
+                        Query Traffic Report Count (default: query_traffic_count.txt)  
   -o OUTPUT, --output OUTPUT
                         Name of slow queries file output (default: slow_queries.txt)
   -v, --verbose         Verbose output (default: False)
@@ -96,5 +99,22 @@ processing, the following command can be used: tcpdump -r <packet_capture> -w <n
 > [!WARNING]
 > traffic-analysis.py is single threaded and can take a long time to process very large pcap files. Current Processing time for a 1G PCAP is 5+ hours
 > verbose output is overwhelimg. If needed, consider a redirect for the output to a file
+> Converting larger pcap files to smaller ones for processing may be advisable. 95M pcap files take around 20 mins to process.
+
+> [!NOTE]
+> The script will generate two report files. The -r option will produce a report with query, count and the query IDs associated with these DNS queries.
+> The -o option will produce a report with query, query id and latency. 
+
+## dns-parser.py
+```
+% ./dns-parser.py --help
+usage: dns-parser.py [-h] -f FILE
+
+Read a pcap file and display DNS packet fields.
+
+options:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  Path to the pcap file
+```
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
