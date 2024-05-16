@@ -68,7 +68,7 @@ Refer to documentation on custom csv import format
 - [ ] Convert hyphenes to dashes automatically in filename
 
 > [!NOTE]
-> if there are any errors during the csv import, they will automatically get downloaded to the current working directory
+> if there are any errors during the csv import, they will automatically download to the current working directory
 
 ## traffic-analysis.py
 ```
@@ -96,7 +96,7 @@ processing, the following command can be used: tcpdump -r <packet_capture> -w <n
 100MB file takes about 10 mins
 
 ```
-# Known Issues
+### Known Issues
 > [!WARNING]
 > traffic-analysis.py is single threaded and can take a long time to process very large pcap files. Current Processing time for a 1G PCAP is 5+ hours
 > verbose output is overwhelimg. If needed, consider a redirect for the output to a file
@@ -117,5 +117,7 @@ options:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  Path to the pcap file
 ```
+
+
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
