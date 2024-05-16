@@ -37,10 +37,6 @@ Download member data from the appliance
 
 ```
 
-> [!IMPORTANT]
-> csvimports via api do not allow the - symbol in filenames. Concert all hyphens to dashes prior to import
-> the filename specified on the CLI is only for naming the file in the GUI to better track what files are actively being imported by the CSV Task Manager
-
 ## ibx-csvimport.py
 ```
  % ./ibx-csvimport.py --help
@@ -62,6 +58,10 @@ optional arguments:
 
 Refer to documentation on custom csv import format
 ```
+
+> [!IMPORTANT]
+> csvimports via api do not allow the - symbol in filenames. Convert all hyphens to dashes prior to import
+> the filename specified on the CLI is only for naming the file in the GUI to better track what files are actively being imported by the CSV Task Manager
 
 > [!NOTE]
 > TODO
