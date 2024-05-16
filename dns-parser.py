@@ -4,6 +4,7 @@ from scapy.all import *
 import argparse
 import time
 
+
 def process_dns_packet(packet, packet_time):
     if packet.haslayer(DNS):
         dns = packet[DNS]
@@ -47,24 +48,35 @@ def process_dns_packet(packet, packet_time):
             for additional in dns.ar:
                 print("\tName:", additional.rrname)
                 print("\tType:", additional.type)
-                print("\tTTL:", additional.ttl)
+                if hasattr(additional, "ttl"):  # Check if ttl field exists
+                    print("\tTTL:", additional.ttl)
+                else:
+                    print("\tTTL: Not available")
                 if hasattr(additional, "rdata"):  # Check if rdata field exists
                     print("\tData:", additional.rdata)
         print("=" * 50)
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Read a pcap file and display DNS packet fields.")
+    parser = argparse.ArgumentParser(
+        description="Read a pcap file and display DNS packet fields."
+    )
     parser.add_argument("-f", "--file", help="Path to the pcap file", required=True)
     args = parser.parse_args()
 
     packets = rdpcap(args.file)
-    packet_times = [(pkt.time, pkt) for pkt in packets]  # Store packet times and packets
+    packet_times = [
+        (pkt.time, pkt) for pkt in packets
+    ]  # Store packet times and packets
 
     # Sort packets by time
     packet_times.sort(key=lambda x: x[0])
 
     for packet_time, packet in packet_times:
-        process_dns_packet(packet, time.strftime("%H:%M:%S", time.localtime(int(packet_time))))
+        process_dns_packet(
+            packet, time.strftime("%H:%M:%S", time.localtime(int(packet_time)))
+        )
+
 
 if __name__ == "__main__":
     main()
