@@ -36,11 +36,6 @@ Download member data from the appliance
 
 ```
 
-> [!NOTE]
-> TODO
-- [ ] Update script to allow full path to import file
-- [ ] Convert hyphenes to dashes automatically in filename
-
 > [!IMPORTANT]
 > csvimports via api do not allow the - symbol in filenames. Concert all hyphens to dashes prior to import
 > the filename specified on the CLI is only for naming the file in the GUI to better track what files are actively being imported by the CSV Task Manager
@@ -66,6 +61,12 @@ optional arguments:
 
 Refer to documentation on custom csv import format
 ```
+
+> [!NOTE]
+> TODO
+- [ ] Update script to allow full path to import file
+- [ ] Convert hyphenes to dashes automatically in filename
+
 > [!NOTE]
 > if there are any errors during the csv import, they will automatically get downloaded to the current working directory
 
