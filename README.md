@@ -5,9 +5,10 @@ infoblox scripts written in python utilizing infoblox-client
 | Script Name | Purpose |
 | :--- | :---: |
 | infoblox-framework.py | Basic python framework to login to infoblox and use as a starting point for new scripts |
-| traffic-analysis.py | Read tcpdump PCAP file and display DNS queries that are higher that requested time delay. Default is 500ms | 
 | ibxfileops.py | Perform basic fileops against Infoblox grid members/master |
 | ibx-csvimport.py | Infoblox CSV import script utilizing infoblox-client module. |
+| traffic-analysis.py | Read tcpdump PCAP file and display DNS queries that are higher that requested time delay. Default is 500ms | 
+| dns-splitter.py | Read tcpdump pcap file and seperate specific dns transaction ID into a seperate file |
 | dns-parser.py | Read PCAP file and display packets to the screen |
 
 # Help Menus
@@ -106,6 +107,21 @@ processing, the following command can be used: tcpdump -r <packet_capture> -w <n
 > The script will generate two report files. The -r option will produce a report with query, count and the query IDs associated with these DNS queries.
 > The -o option will produce a report with query, query id and latency. 
 
+## dns-splitter.py
+```
+usage: dns-splitter.py [-h] -p PCAP -d DNSID
+
+Parse pcap files and seperate specific DNS transaction IDs into new pcap file
+
+options:
+  -h, --help            show this help message and exit
+  -p PCAP, --pcap PCAP  traffic capture file
+  -d DNSID, --dnsid DNSID
+                        dns query id
+
+Uses transaction IDs found by traffic-analysis.py
+```
+
 ## dns-parser.py
 ```
 % ./dns-parser.py --help
@@ -117,7 +133,6 @@ options:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  Path to the pcap file
 ```
-
 
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
