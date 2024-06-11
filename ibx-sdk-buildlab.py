@@ -66,30 +66,45 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         print(network_view.json())
     except WapiRequestException as err:
         log.error(err)
-        sys.exit(1)
+        sys.exit(2)
 
-    try:
-        # Create DNS zone object
-        response = wapi.post("zone_auth",json={"fqdn":"lab.domain.local", "grid_primary":[{"name":"infoblox.localdomain"}]}) 
-        # Post requests return 201 status if successful: https://ipam.illinois.edu/wapidoc/index.html?highlight=response%20code#post
-        if response.status_code !=201:
-            print("Zone creation error: {response.text}")
-        else:
-            print("Zone creation successful: {response.json()}")
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
+    # Common record types
+    record_types = [
+        {"zone_auth": {"fqdn":"lab.domain.local", "grid_primary":[{"name":"infoblox.localdomain"}], "comment": "This is a example forward zone"}},
+        {"zone_auth": {"fqdn":"192.168.200.0/24", "grid_primary":[{"name":"infoblox.localdomain"}], "zone_format":"IPV4", "comment":"This is an example reverse zone"}},
+        {"record:a": {"name": "lab.domain.local", "ipv4addr": "192.168.200.100","comment":"Example A record"}},
+        {"record:a": {"name": "database.lab.domain.local", "ipv4addr": "192.168.200.200","comment":"Example A record"}},
+        {"record:a": {"name": "smtp1.lab.domain.local", "ipv4addr": "192.168.200.150","comment":"Example A record"}},
+        {"record:a": {"name": "smtp2.lab.domain.local", "ipv4addr": "192.168.200.151","comment":"Example A record"}},
+        {"record:a": {"name": "smtp3.lab.domain.local", "ipv4addr": "192.168.200.152","comment":"Example A record"}},
+        {"record:a": {"name": "smtp4.lab.domain.local", "ipv4addr": "192.168.200.153","comment":"Example A record"}},
+        {"record:cname":{"name":"www.lab.domain.local", "canonical":"lab.domain.local", "comment":"This is an example CNAME record"}},
+        {"record:cname":{"name":"db.lab.domain.local", "canonical":"database.domain.local", "comment":"This is an example CNAME record"}},
+        {"record:mx": {"name":"lab.domain.local", "preference":20, "mail_exchanger":"smtp1.lab.domain.local", "comment":"This is an example MX record"}},
+        {"record:mx": {"name":"lab.domain.local", "preference":20, "mail_exchanger":"smtp2.lab.domain.local","comment":"This is an example MX record"}},
+        {"record:mx": {"name":"lab.domain.local", "preference":40, "mail_exchanger":"smtp3.lab.domain.local","comment":"This is an example MX record"}},
+        {"record:mx": {"name":"lab.domain.local", "preference":40, "mail_exchanger":"smtp4.lab.domain.local","comment":"This is an example MX record"}},
+        {"record:ptr": {"ipv4addr": "192.168.200.100", "ptrdname":"lab.domain.local", "comment":"This is an example PTR"}},
+        {"record:ptr": {"ipv4addr": "192.168.200.200", "ptrdname":"database.lab.domain.local", "comment": "This is an example PTR"}},
+        {"record:ptr": {"ipv4addr": "192.168.200.150", "ptrdname":"smtp1.lab.domain.local", "comment": "This is an example PTR"}},
+        {"record:ptr": {"ipv4addr": "192.168.200.151", "ptrdname":"smtp2.lab.domain.local", "comment": "This is an example PTR"}},
+        {"record:ptr": {"ipv4addr": "192.168.200.152", "ptrdname":"smtp3.lab.domain.local", "comment": "This is an example PTR"}},
+        {"record:ptr": {"ipv4addr": "192.168.200.153", "ptrdname":"smtp4.lab.domain.local", "comment": "This is an example PTR"}},
+        ]
 
-    try:
-        response = wapi.post("record:a", json={"name": "lab.domain.local", "ipv4addr": "192.168.200.100","comment":"Example A record"})
-        if response.status_code !=201:
-            print("Record:A creation error: {response.text}")
-        else:
-            print("Record:A creation successful {response.json()}")
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-
+    for record in record_types:
+        for data in record:
+            try:
+                # Create DNS zone object
+                response = wapi.post(data,json=record[data])
+                # Post requests return 201 status if successful: https://ipam.illinois.edu/wapidoc/index.html?highlight=response%20code#post
+                if response.status_code !=201:
+                    print(f"{data} creation error: {response.text}")
+                else:
+                    print(f"{data} creation successful: {response.json()}")
+            except WapiRequestException as err:
+                log.error(err)
+                sys.exit(1)
 
     sys.exit()
 
