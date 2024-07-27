@@ -6,7 +6,6 @@ from tqdm import tqdm
 # import multiprocessing
 import argparse
 import statistics
-import numpy as np
 
 
 class DnsAnalyzer:
