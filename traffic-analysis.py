@@ -6,6 +6,7 @@ from tqdm import tqdm
 # import multiprocessing
 import argparse
 import statistics
+import numpy as np
 
 
 class DnsAnalyzer:
@@ -269,10 +270,15 @@ class DnsAnalyzer:
             lowest_latency = min(latency_times)
             highest_latency = max(latency_times)
             median_latency = statistics.median(latency_times)
+            # Calculate Mean (need to optimize this later)
+            total_sum = sum(latency_times)
+            count = len(latency_times)
+            mean_latency = total_sum / count
 
             print("\033[94mLowest Latency: {}\033[0m".format(lowest_latency))
             print("\033[91mHighest Latency: {}\033[0m".format(highest_latency))
             print("\033[93mMedian Latency: {}\033[0m".format(median_latency))
+            print("\033[92mMean Latency: {}\033[0m".format(mean_latency))
 
         total = total_packets
         slow = len(slow_queries)
