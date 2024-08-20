@@ -11,7 +11,7 @@ import argparse
 parser = argparse.ArgumentParser(
     prog="Infoblox Network/Range Updater",
     description="Update network and range with a new member and unassign FOA",
-    epilog="One off for customer",
+    epilog="Often during hardware or datacenter migrations, it becomes nessasary to move dhcp networks between members. This script will allow an administrator to update the network assignment for a partciular network and then update the dhcp range to that particular member and unassign the FoA",
 )
 parser.add_argument("gmhostname", help="Grid Master IP")
 parser.add_argument("-u", "--user")
