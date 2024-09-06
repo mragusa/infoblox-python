@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from scapy.all import *
+from scapy.all import IP, UDP, DNS, DNSQR, DNSRR, PcapReader
 from tqdm import tqdm
 
 # import multiprocessing
