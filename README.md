@@ -10,6 +10,7 @@ infoblox scripts written in python utilizing infoblox-client
 | traffic-analysis.py | Read tcpdump PCAP file and display DNS queries that are higher that requested time delay. Default is 500ms | 
 | dns-splitter.py | Read tcpdump pcap file and seperate specific dns transaction ID into a seperate file |
 | dns-parser.py | Read PCAP file and display packets to the screen |
+| find_dns_server.py | Read PCAP file and display DNS servers found |
 
 # Help Menus
 ## ibxfileops.py
