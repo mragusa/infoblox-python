@@ -187,11 +187,7 @@ class DnsAnalyzer:
             print("Query: {}".format(query))
         query_id = query["query_id"]
         query_match = next(
-            (
-                resp
-                for resp in self.responses_sent
-                if resp["query_id"] == query_id
-            ),
+            (resp for resp in self.responses_sent if resp["query_id"] == query_id),
             None,
         )
         if self.verbose:
@@ -199,11 +195,7 @@ class DnsAnalyzer:
         if query_match:
             latency_time = query_match["response_time"] - query["query_time"]
             if self.verbose:
-                print(
-                    "Query ID: {}, Latency Time: {}".format(
-                        query_id, latency_time
-                    )
-                )
+                print("Query ID: {}, Latency Time: {}".format(query_id, latency_time))
             self.latency_times.append(latency_time)
             if latency_time > self.time_delay:
                 self.slow_queries.append(
@@ -358,8 +350,7 @@ def main():
 if __debug__:
     # Run the script without -O to enable the cProfile debug mode
     print("cProfile Enabled")
-    cProfile.run('main()')
+    cProfile.run("main()")
 else:
     if __name__ == "__main__":
         main()
-
