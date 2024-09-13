@@ -3,9 +3,9 @@
 from scapy.all import IP, UDP, DNS, DNSQR, DNSRR, PcapReader
 from tqdm import tqdm
 
-# import multiprocessing
 import argparse
 import statistics
+#import cProfile
 
 
 class DnsAnalyzer:
@@ -27,6 +27,8 @@ class DnsAnalyzer:
         self.recordname = {}
         self.recordname_id = {}
         self.recordtypes = {}
+        self.latency_times = []
+        self.slow_queries = []
         self.record_type_lookup = {
             1: "A",
             28: "AAAA",
@@ -180,8 +182,43 @@ class DnsAnalyzer:
                                         )
                                     )
 
+    def process_latency(self, query):
+        if self.verbose:
+            print("Query: {}".format(query))
+        query_id = query["query_id"]
+        query_match = next(
+            (
+                resp
+                for resp in self.responses_sent
+                if resp["query_id"] == query_id
+            ),
+            None,
+        )
+        if self.verbose:
+            print("Query Match: {}".format(query_match))
+        if query_match:
+            latency_time = query_match["response_time"] - query["query_time"]
+            if self.verbose:
+                print(
+                    "Query ID: {}, Latency Time: {}".format(
+                        query_id, latency_time
+                    )
+                )
+            self.latency_times.append(latency_time)
+            if latency_time > self.time_delay:
+                self.slow_queries.append(
+                    {
+                        "query": query["query_request"],
+                        "query_id": query_id,
+                        "latency": latency_time,
+                    }
+                )
+                if self.verbose:
+                    print("Slow query appended")
+
     def analyze(self):
         total_packets = 0
+
         with PcapReader(self.capture_file) as packets:
             for _ in packets:
                 total_packets += 1
@@ -216,8 +253,7 @@ class DnsAnalyzer:
             )
         )
         print()
-        latency_times = []
-        slow_queries = []
+
         with tqdm(
             total=len(self.queries_received),
             desc="Processing Query Latency",
@@ -225,53 +261,28 @@ class DnsAnalyzer:
             colour="green",
         ) as pbar:
             for query in self.queries_received:
-                query_id = query["query_id"]
-                query_match = next(
-                    (
-                        resp
-                        for resp in self.responses_sent
-                        if resp["query_id"] == query_id
-                    ),
-                    None,
-                )
-                if query_match:
-                    latency_time = query_match["response_time"] - query["query_time"]
-                    if self.verbose:
-                        print(
-                            "Query ID: {}, Latency Time: {}".format(
-                                query_id, latency_time
-                            )
-                        )
-                    latency_times.append(latency_time)
-                    pbar.update(1)
-                    if latency_time > self.time_delay:
-                        slow_queries.append(
-                            {
-                                "query": query["query_request"],
-                                "query_id": query_id,
-                                "latency": latency_time,
-                            }
-                        )
+                self.process_latency(query)
+                pbar.update(1)
         print()
         print(
             "\033[94mTotal Slow Queries\033[0m: \033[93m{}\033[0m".format(
-                len(slow_queries)
+                len(self.slow_queries)
             )
         )
         print("\033[92mSaving slow queries to file\033[0m")
         with open(self.file, "w") as f:
-            for query in slow_queries:
+            for query in self.slow_queries:
                 f.write(str(query) + "\n")
         print()
         print("\033[95mProcessing Latency Times\033[0m")
         print()
-        if latency_times:
-            lowest_latency = min(latency_times)
-            highest_latency = max(latency_times)
-            median_latency = statistics.median(latency_times)
+        if self.latency_times:
+            lowest_latency = min(self.latency_times)
+            highest_latency = max(self.latency_times)
+            median_latency = statistics.median(self.latency_times)
             # Calculate Mean (need to optimize this later)
-            total_sum = sum(latency_times)
-            count = len(latency_times)
+            total_sum = sum(self.latency_times)
+            count = len(self.latency_times)
             mean_latency = total_sum / count
 
             print("\033[94mLowest Latency: {}\033[0m".format(lowest_latency))
@@ -280,7 +291,7 @@ class DnsAnalyzer:
             print("\033[92mMean Latency: {}\033[0m".format(mean_latency))
 
         total = total_packets
-        slow = len(slow_queries)
+        slow = len(self.slow_queries)
         percentage_difference = ((total - slow) / total) * 100
         print()
         print("\033[94mTotal Packets: {}\033[0m".format(total))
@@ -293,7 +304,8 @@ class DnsAnalyzer:
         print("\033[92mSaving Total Names Queried Report\033[0m")
         print()
         if self.verbose:
-            print("Query: {} Count: {}".format(i, sorted_recordname[i]))
+            for i in sorted_recordname:
+                print("Query and Count: {}".format(i))
         with open(self.report, "w") as f:
             for query, count in sorted_recordname:
                 f.write(
@@ -344,4 +356,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # If you need to enable cProfile. Uncomment line 8 and uncomment the line below
+    #cProfile.run('main()')
+    # Comment out main() if using cProfile
     main()
