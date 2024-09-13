@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -O
 
 from scapy.all import IP, UDP, DNS, DNSQR, DNSRR, PcapReader
 from tqdm import tqdm
 
 import argparse
 import statistics
-#import cProfile
+import cProfile
 
 
 class DnsAnalyzer:
@@ -355,8 +355,11 @@ def main():
     analyzer.analyze()
 
 
-if __name__ == "__main__":
-    # If you need to enable cProfile. Uncomment line 8 and uncomment the line below
-    #cProfile.run('main()')
-    # Comment out main() if using cProfile
-    main()
+if __debug__:
+    # Run the script without -O to enable the cProfile debug mode
+    print("cProfile Enabled")
+    cProfile.run('main()')
+else:
+    if __name__ == "__main__":
+        main()
+
