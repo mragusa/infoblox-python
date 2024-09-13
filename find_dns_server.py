@@ -30,6 +30,7 @@ def main(file, display):
 
 
 if __name__ == '__main__':
+    # Update to allow display by count instead of one giant output dump
     parser = argparse.ArgumentParser(description="Parse pcap files to file DNS servers", epilog="Utilize traffic_analysis script to parse pcap files for slow DNS queries")
     parser.add_argument("-f", "--file", help="pcap source file to parse")
     parser.add_argument("-p", "--profile", action='store_true', help="Enable CPU profiling")
