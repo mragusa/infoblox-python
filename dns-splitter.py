@@ -23,8 +23,8 @@ def splitpcap(pcap, dnsid):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Parse pcap files and seperate specific DNS transaction IDs into new pcap file",
-        epilog="Uses transaction IDs found by traffic-analysis.py",
+        description="Parse pcap files and seperate specific DNS Query IDs into new pcap file",
+        epilog="Uses query IDs found by traffic-analysis.py",
     )
     parser.add_argument("-p", "--pcap", help="traffic capture file", required=True)
     parser.add_argument("-d", "--dnsid", help="dns query id", required=True)
